@@ -1,0 +1,7 @@
+# S2V Prototype
+
+Real-time Sign-to-Voice communication prototype with:
+- WebRTC video/audio
+- Live sign prediction
+- Subtitle broadcasting
+- Voice generation
