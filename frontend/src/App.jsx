@@ -1,14 +1,12 @@
-import React from 'react'
-import Navbar from './components/Navbar'
 
-const App = () => {
+import MeetingRoom from "./pages/MeetingRoom";
+
+function App() {
   return (
-    <div>
-      <div>
-        <Navbar/>
-      </div>
+    <div className="bg-[#0F172A] min-h-screen text-white overflow-hidden">
+      <MeetingRoom />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
