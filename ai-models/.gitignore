@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual Environment
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Model files
+# models/*.h5
+# models/*.keras
+# models/*.pt
+# models/*.pth
+# models/*.onnx
+
+# Dataset & generated data
+data/
+raw_videos/
+output/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# TensorFlow cache
+.tf_cache/
+
+# Temporary files
+temp/
+tmp/
+
+# MediaPipe cache
+*.pbtxt
+
+# Environment variables
+.env.local
