@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { MessageSquareMore } from "lucide-react";
+import Share from "../assets/Share_screen.png";
+import Caption from "../assets/close-caption.png";
+import Chat from "../assets/comment.png";
+import Hand from "../assets/palm.png";
+import Link from "../assets/link.png"
+import Happy from "../assets/happy.png"
+import Phone from "../assets/phone.png"
 import {
   Mic,
   MicOff,
@@ -12,70 +18,85 @@ import {
 } from "lucide-react";
 
 export default function MeetingRoom() {
-  
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const hoverTimeout = useRef(null);
+  const [showEmojiMenu, setShowEmojiMenu] = useState(false);
+  const emojiRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-  const [showConversationMenu, setShowConversationMenu] = useState(false);
-  const [meetingLink, setMeetingLink] = useState("");
-  const [chatOpen, setChatOpen] = useState(false);
-  const [flyingEmojis, setFlyingEmojis] = useState([]);
-
-const [chatMessage, setChatMessage] = useState("");
-
-const [messages, setMessages] = useState([]);
-  // STATES
-const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-
-const [captionsEnabled, setCaptionsEnabled] = useState(false);
-
-const [handRaised, setHandRaised] = useState(false);
-
-
-
-const [emojiReaction, setEmojiReaction] = useState("");
-
-//const meetingLink = "https://s2v-meet.vercel.app/room/12345";
-
 
   const [stream, setStream] = useState(null);
 
   const [micOn, setMicOn] = useState(true);
-
   const [cameraOn, setCameraOn] = useState(true);
 
   const [callEnded, setCallEnded] = useState(false);
-
   const [connected, setConnected] = useState(false);
 
-  const [showConversation, setShowConversation] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] =
+    useState("English");
 
-  const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [chatOpen, setChatOpen] = useState(false);
+
+  const [chatMessage, setChatMessage] = useState("");
+
+  const [messages, setMessages] = useState([]);
+
+  const [showConversationMenu, setShowConversationMenu] =
+    useState(false);
+
+  const [showOptionsMenu, setShowOptionsMenu] =
+    useState(false);
+
+  const [captionsEnabled, setCaptionsEnabled] =
+    useState(false);
+
+  const [handRaised, setHandRaised] = useState(false);
+
+  const [meetingLink, setMeetingLink] = useState("");
+
+
+  const [flyingEmojis, setFlyingEmojis] = useState([]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+        setShowEmojiMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     startCamera();
   }, []);
 
-  // START CAMERA
+  // CAMERA
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
+      const mediaStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
 
       setStream(mediaStream);
 
-      // LOCAL VIDEO
       if (localVideoRef.current) {
-        localVideoRef.current.srcObject = mediaStream;
+        localVideoRef.current.srcObject =
+          mediaStream;
       }
 
     } catch (error) {
-      console.log("Permission denied:", error);
+      console.log(error);
     }
   };
 
-  // MIC TOGGLE
+  // MIC
   const toggleMic = () => {
     if (!stream) return;
 
@@ -86,7 +107,7 @@ const [emojiReaction, setEmojiReaction] = useState("");
     setMicOn(!micOn);
   };
 
-  // CAMERA TOGGLE
+  // CAMERA
   const toggleCamera = () => {
     if (!stream) return;
 
@@ -108,38 +129,64 @@ const [emojiReaction, setEmojiReaction] = useState("");
     setCallEnded(true);
   };
 
-  // CONNECT CALL
+  // CONNECT
   const connectCall = () => {
     setConnected(true);
   };
 
-  return (
-    <div className="w-full h-screen bg-[#0F172A] overflow-hidden">
+  // EMOJI
+  const sendEmoji = (emoji) => {
+    const id = Date.now();
 
-      <div className="w-full h-full flex flex-col p-4 lg:p-6 gap-4">
+    const newEmoji = {
+      id,
+      emoji,
+    };
+
+    setFlyingEmojis((prev) => [
+      ...prev,
+      newEmoji,
+    ]);
+
+    setTimeout(() => {
+      setFlyingEmojis((prev) =>
+        prev.filter((item) => item.id !== id)
+      );
+    }, 4000);
+  };
+
+  return (
+    <div className="w-full h-screen bg-[#f1ECF4] overflow-hidden text-[#111827]">
+
+      <div className="w-full h-full flex flex-col p-4 gap-4">
 
         {/* TOP BAR */}
-        <div className="w-full min-h-16 rounded-2xl bg-[#111827] border border-gray-800 flex items-center justify-between px-5 py-3">
+        <div className="w-full min-h-16 bg-white border border-[#E5E7EB] rounded-[28px] px-5 py-3 flex items-center justify-between shadow-sm">
 
           {/* LEFT */}
           <div className="flex items-center gap-4">
 
-            {/* HAMBURGER */}
-            <button className="w-11 h-11 rounded-xl bg-[#1E293B] hover:bg-[#334155] flex items-center justify-center transition">
+            <button className="w-11 h-11 rounded-2xl bg-[#f1ECF4] hover:bg-[#E0E7FF] transition flex items-center justify-center">
 
               <div className="flex flex-col gap-1">
-                <span className="w-5 h-[2px] bg-white rounded-full"></span>
-                <span className="w-5 h-[2px] bg-white rounded-full"></span>
-                <span className="w-5 h-[2px] bg-white rounded-full"></span>
+                <span className="w-5 h-[2px] bg-[#111827] rounded-full"></span>
+                <span className="w-5 h-[2px] bg-[#111827] rounded-full"></span>
+                <span className="w-5 h-[2px] bg-[#111827] rounded-full"></span>
               </div>
 
             </button>
-            
 
-            {/* TITLE */}
-            <h1 className="text-lg md:text-xl font-semibold text-cyan-400">
-              S2V Live Meet
-            </h1>
+            <div>
+
+              <h1 className="text-xl font-semibold text-[#000000]">
+                S2V Connect
+              </h1>
+
+              <p className="text-xs text-[#6B7280]">
+                AI Meeting Platform
+              </p>
+
+            </div>
 
           </div>
 
@@ -151,20 +198,20 @@ const [emojiReaction, setEmojiReaction] = useState("");
 
               <select
                 value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
+                onChange={(e) =>
+                  setSelectedLanguage(e.target.value)
+                }
                 className="
-                  bg-[#1E293B]
-                  text-white
-                  px-4
-                  py-2
-                  rounded-xl
+                  bg-white
                   border
-                  border-gray-700
-                  outline-none
-                  cursor-pointer
-                  text-sm
-                  appearance-none
+                  border-[#E5E7EB]
+                  rounded-2xl
+                  px-4
+                  py-3
                   pr-10
+                  outline-none
+                  appearance-none
+                  text-[#111827]
                 "
               >
 
@@ -174,34 +221,42 @@ const [emojiReaction, setEmojiReaction] = useState("");
                 <option>Malayalam</option>
                 <option>Kannada</option>
                 <option>Telugu</option>
-                <option>Marathi</option>
 
               </select>
 
-              <div className="absolute top-1/2 right-3 -translate-y-1/2 pointer-events-none">
-                <Languages size={18} className="text-cyan-400" />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+
+                <Languages
+                  size={18}
+                  className="text-[#675B84]"
+                />
+
               </div>
 
             </div>
 
             {/* MORE */}
-            <button className="w-11 h-11 rounded-xl bg-[#1E293B] hover:bg-[#334155] flex items-center justify-center transition">
+            <button className="w-11 h-11 rounded-2xl bg-[#f1ECF4] hover:bg-[#675B84] transition flex items-center justify-center">
 
-              <MoreVertical size={20} />
+              <MoreVertical
+                size={20}
+                className="text-[#000000]"
+              />
 
             </button>
 
           </div>
+
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* MAIN */}
         <div className="flex-1 flex flex-col xl:flex-row gap-4 overflow-hidden">
 
-          {/* VIDEO SECTION */}
+          {/* VIDEOS */}
           <div className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden">
 
             {/* MY VIDEO */}
-            <div className="flex-1 relative rounded-3xl bg-[#111827] border border-cyan-500/20 overflow-hidden min-h-[300px]">
+            <div className="flex-1 relative rounded-[32px] bg-black border border-[#E5E7EB] overflow-hidden shadow-sm">
 
               {!callEnded && cameraOn ? (
                 <video
@@ -212,45 +267,53 @@ const [emojiReaction, setEmojiReaction] = useState("");
                   className="w-full h-full object-cover scale-x-[-1]"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-500 text-xl">
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">
                   Camera Off
                 </div>
-                
               )}
 
-              {/* MY LABEL */}
-              <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-sm text-white border border-white/10">
+              {/* LABEL */}
+              <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-xl border border-[#E5E7EB] px-4 py-2 rounded-2xl text-sm shadow-sm">
                 You
               </div>
 
-              {/* AI STATUS */}
-              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-lg px-4 py-2 rounded-xl border border-cyan-400/20">
-                <p className="text-sm text-cyan-300">
-                  ✋ Hand Tracking Active
+              {/* AI */}
+              <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-xl border border-[#E5E7EB] px-4 py-2 rounded-2xl shadow-sm">
+
+                <p className="text-sm text-[#2563EB]">
+                  ✨ AI Hand Tracking Active
                 </p>
+
               </div>
-              {/* FLYING EMOJIS */}
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
 
-  {flyingEmojis.map((item, index) => (
-    <div
-      key={item.id}
-      className="absolute bottom-6 text-xl md:text-2xl animate-[gmeetFloat_4s_ease-in-out_forwards]"
-      style={{
-        left: `calc(50% + ${(index % 4) * 12 - 24}px)`,
-        animationDelay: `${index * 0.15}s`,
-      }}
-    >
-      {item.emoji}
-    </div>
-  ))}
+              {/* HAND */}
+              {handRaised && (
+                <div className="absolute top-4 right-4 text-4xl animate-bounce">
+                  ✋
+                </div>
+              )}
 
-</div>
+              {/* EMOJIS */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+
+                {flyingEmojis.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="absolute bottom-10 text-2xl animate-[gmeetFloat_4s_ease-in-out_forwards]"
+                    style={{
+                      left: `calc(50% + ${(index % 4) * 16 - 24}px)`,
+                    }}
+                  >
+                    {item.emoji}
+                  </div>
+                ))}
+
+              </div>
 
             </div>
 
-            {/* PEER VIDEO */}
-            <div className="flex-1 relative rounded-3xl bg-[#111827] border border-purple-500/20 overflow-hidden min-h-[300px]">
+            {/* REMOTE VIDEO */}
+            <div className="flex-1 relative rounded-[32px] bg-black border border-[#E5E7EB] overflow-hidden shadow-sm">
 
               {connected && !callEnded ? (
                 <video
@@ -260,721 +323,612 @@ const [emojiReaction, setEmojiReaction] = useState("");
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+                <div className="w-full h-full flex flex-col items-center justify-center">
 
-                  <div className="w-24 h-24 rounded-full bg-[#1E293B] flex items-center justify-center text-3xl mb-4">
+                  <div className="w-24 h-24 rounded-full bg-[#f1ECF4] flex items-center justify-center text-3xl mb-4">
                     👤
                   </div>
 
-                  <p className="text-lg">
+                  <p className="text-lg text-[#ecedf0]">
                     Waiting for participant...
-                  </p>
-
-                  <p className="text-sm text-gray-600 mt-2">
-                    Peer-to-peer connection ready
                   </p>
 
                   <button
                     onClick={connectCall}
-                    className="mt-6 px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white font-medium transition"
+                    className="
+                      mt-6
+                      px-6
+                      py-3
+                      rounded-2xl
+                      bg-[#675B84]
+                      hover:bg-[#271C44]
+                      text-white
+                      transition
+                      font-medium
+                    "
                   >
                     Connect Peer
                   </button>
 
+                </div>
+              )}
+
+              {/* LABEL */}
+              <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-xl border border-[#E5E7EB] px-4 py-2 rounded-2xl text-sm shadow-sm">
+                Participant
+              </div>
+
+              {/* CAPTIONS */}
+              {captionsEnabled && (
+                <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-xl border border-[#E5E7EB] px-4 py-3 rounded-2xl shadow-sm max-w-[70%]">
+
+                  <p className="text-sm text-[#111827]">
+                    Real-time captions appear here...
+                  </p>
 
                 </div>
               )}
 
-              {/* PEER LABEL */}
-              <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-sm text-white border border-white/10">
-                Participant
-              </div>
-
-              {/* LIVE CAPTION */}
-              <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-xl border border-purple-500/20 max-w-[70%]">
-
-                <p className="text-sm text-white">
-                  Real-time captions appear here...
-                </p>
-                {/* FLYING EMOJIS */}
-<div className="absolute inset-0 pointer-events-none overflow-hidden">
-
-  {flyingEmojis.map((item) => (
-    <div
-      key={item.id}
-      className="absolute bottom-10 text-5xl animate-[floatUp_4s_linear_forwards]"
-      style={{
-        left: `${Math.random() * 80}%`,
-      }}
-    >
-      {item.emoji}
-    </div>
-  ))}
-
-</div>
-
-              </div>
-
-            </div>
-          </div>
-        {/* CHAT PANEL */}
-{chatOpen && (
-  <div className="w-full xl:w-[350px] bg-[#111827] border border-gray-800 rounded-3xl flex flex-col overflow-hidden">
-
-    {/* HEADER */}
-    <div className="px-5 py-4 border-b border-gray-800 flex items-center justify-between">
-
-      <div>
-
-        <h2 className="text-lg font-semibold text-cyan-400">
-          Meeting Chat
-        </h2>
-
-        <p className="text-xs text-gray-400 mt-1">
-          Live participant messages
-        </p>
-
-      </div>
-
-      <button
-        onClick={() => setChatOpen(false)}
-        className="text-gray-400 hover:text-white text-xl"
-      >
-        ✕
-      </button>
-
-    </div>
-
-    {/* CHAT MESSAGES */}
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-
-      {messages.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-gray-500 text-sm">
-          No messages yet
-        </div>
-      ) : (
-        messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              msg.sender === "You"
-                ? "justify-end"
-                : "justify-start"
-            }`}
-          >
-
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                msg.sender === "You"
-                  ? "bg-cyan-500 text-white"
-                  : "bg-[#1E293B] text-gray-200"
-              }`}
-            >
-
-              <p className="text-xs opacity-70 mb-1">
-                {msg.sender}
-              </p>
-
-              <p className="text-sm break-words">
-                {msg.text}
-              </p>
-
             </div>
 
           </div>
-        ))
-      )}
 
-    </div>
+          {/* CHAT */}
+          {chatOpen && (
+            <div className="w-full xl:w-[360px] bg-white border border-[#E5E7EB] rounded-[32px] flex flex-col overflow-hidden shadow-sm">
 
-    {/* INPUT */}
-    <div className="p-4 border-t border-gray-800 flex gap-3">
+              {/* HEADER */}
+              <div className="px-5 py-4 border-b border-[#E5E7EB] flex items-center justify-between">
 
-      <input
-        type="text"
-        value={chatMessage}
-        onChange={(e) => setChatMessage(e.target.value)}
-        placeholder="Type message..."
-        className="
-          flex-1
-          bg-[#1E293B]
-          border
-          border-gray-700
-          rounded-2xl
-          px-4
-          py-3
-          outline-none
-          text-white
-          focus:border-cyan-400
-        "
-      />
+                <div>
 
-      <button
-        onClick={() => {
+                  <h2 className="text-lg font-semibold text-[#2563EB]">
+                    Meeting Chat
+                  </h2>
 
-          if (!chatMessage.trim()) return;
-
-          setMessages([
-            ...messages,
-            {
-              sender: "You",
-              text: chatMessage,
-            },
-          ]);
-
-          setChatMessage("");
-
-        }}
-        className="px-5 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 transition font-medium"
-      >
-        Send
-      </button>
-
-    </div>
-
-  </div>
-)}
-
-          {/* CONVERSATION PANEL */}
-          {showConversation && (
-            <div className="w-full xl:w-[340px] bg-[#111827] border border-gray-800 rounded-3xl p-5 flex flex-col">
-
-              <div className="flex items-center justify-between mb-5">
-
-                <h2 className="text-xl font-semibold text-cyan-400">
-                  Conversation
-                </h2>
-
-                <div className="bg-green-500/20 text-green-400 text-xs px-3 py-1 rounded-full">
-                  LIVE
-                </div>
-
-              </div>
-
-              {/* LANGUAGE */}
-              <div className="bg-[#1E293B] rounded-2xl p-4 border border-cyan-500/10 mb-4">
-
-                <p className="text-xs text-gray-400 mb-2">
-                  Selected Language
-                </p>
-
-                <p className="text-cyan-300">
-                  {selectedLanguage}
-                </p>
-
-              </div>
-
-              {/* LIVE CHAT */}
-              <div className="flex-1 overflow-y-auto">
-
-                <div className="bg-[#1E293B] rounded-2xl p-4 border border-purple-500/10">
-
-                  <p className="text-xs text-purple-300 mb-2">
-                    Waiting for captions
-                  </p>
-
-                  <p className="text-gray-300">
-                    Real-time sign-to-text and voice captions will appear here.
+                  <p className="text-xs text-[#6B7280] mt-1">
+                    Live participant messages
                   </p>
 
                 </div>
+
+                <button
+                  onClick={() => setChatOpen(false)}
+                  className="text-[#6B7280] hover:text-black"
+                >
+                  ✕
+                </button>
+
+              </div>
+
+              {/* MESSAGES */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+                {messages.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-[#6B7280] text-sm">
+                    No messages yet
+                  </div>
+                ) : (
+                  messages.map((msg, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${msg.sender === "You"
+                        ? "justify-end"
+                        : "justify-start"
+                        }`}
+                    >
+
+                      <div
+                        className={`max-w-[80%] px-4 py-3 rounded-2xl ${msg.sender === "You"
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#f1ECF4]"
+                          }`}
+                      >
+
+                        <p className="text-xs opacity-70 mb-1">
+                          {msg.sender}
+                        </p>
+
+                        <p className="text-sm">
+                          {msg.text}
+                        </p>
+
+                      </div>
+
+                    </div>
+                  ))
+                )}
+
+              </div>
+
+              {/* INPUT */}
+              <div className="p-4 border-t border-[#E5E7EB] flex gap-3">
+
+                <input
+                  type="text"
+                  value={chatMessage}
+                  onChange={(e) =>
+                    setChatMessage(e.target.value)
+                  }
+                  placeholder="Type message..."
+                  className="
+                    flex-1
+                    bg-white
+                    border
+                    border-[#E5E7EB]
+                    rounded-2xl
+                    px-4
+                    py-3
+                    outline-none
+                  "
+                />
+
+                <button
+                  onClick={() => {
+
+                    if (!chatMessage.trim()) return;
+
+                    setMessages([
+                      ...messages,
+                      {
+                        sender: "You",
+                        text: chatMessage,
+                      },
+                    ]);
+
+                    setChatMessage("");
+
+                  }}
+                  className="px-5 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium"
+                >
+                  Send
+                </button>
 
               </div>
 
             </div>
           )}
+
         </div>
 
-        {/* BOTTOM CONTROLS */}
-        <div className="w-full flex justify-center py-2">
+        {/* BOTTOM BAR */}
+        <div className="w-full flex justify-center">
 
-          <div className="bg-[#111827] border border-gray-800 px-5 py-3 rounded-full flex items-center gap-4 shadow-2xl flex-wrap justify-center">
+          <div className="bg-white border border-[#E5E7EB] rounded-full px-5 py-3 flex items-center gap-4 shadow-lg flex-wrap justify-center">
 
             {/* MIC */}
             <button
               onClick={toggleMic}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition ${
-                micOn
-                  ? "bg-[#1E293B] hover:bg-[#334155]"
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
+              className={`w-14 h-14 rounded-full flex items-center justify-center transition ${micOn
+                ? "bg-[#f1ECF4] hover:bg-[#E0E7FF]"
+                : "bg-[#675B84]"
+                }`}
             >
-              {micOn ? <Mic size={22} /> : <MicOff size={22} />}
+              {micOn ? (
+                <Mic
+                  size={22}
+                  className="text-[#2563EB]"
+                />
+              ) : (
+                <MicOff
+                  size={22}
+                  className="text-white"
+                />
+              )}
             </button>
 
             {/* CAMERA */}
             <button
               onClick={toggleCamera}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition ${
-                cameraOn
-                  ? "bg-[#1E293B] hover:bg-[#334155]"
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
+              className={`w-14 h-14 rounded-full flex items-center justify-center transition ${cameraOn
+                ? "bg-[#f1ECF4] hover:bg-[#E0E7FF]"
+                : "bg-[#675B84]"
+                }`}
             >
-              {cameraOn ? <Video size={22} /> : <VideoOff size={22} />}
+              {cameraOn ? (
+                <Video
+                  size={22}
+                  className="text-[#2563EB]"
+                />
+              ) : (
+                <VideoOff
+                  size={22}
+                  className="text-white"
+                />
+              )}
             </button>
 
-            {/* END CALL */}
+            {/* END */}
             <button
               onClick={endCall}
-              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition shadow-2xl"
-            >
-              <PhoneOff size={28} />
-            </button>
-
-            {/* CONVERSATION MENU */}
-<div className="relative">
-
-  <button
-    onClick={() => setShowConversationMenu(!showConversationMenu)}
-    className="px-5 h-14 rounded-full bg-cyan-500 hover:bg-cyan-600 flex items-center justify-center transition font-medium"
-  >
-    Conversation
-  </button>
-
-  {/* DROPDOWN */}
-  {showConversationMenu && (
-    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-60 bg-[#111827] border border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-50">
-
-      {/* SIGN TO VOICE */}
-      <button
-        className="
-          w-full
-          text-left
-          px-5
-          py-4
-          hover:bg-[#1E293B]
-          transition
-          border-b
-          border-gray-800
-        "
-      >
-        <p className="text-white font-medium">
-          Sign → Voice
-        </p>
-
-        <p className="text-xs text-gray-400 mt-1">
-          Convert sign language into speech
-        </p>
-      </button>
-
-      {/* SIGN TO TEXT */}
-      <button
-        className="
-          w-full
-          text-left
-          px-5
-          py-4
-          hover:bg-[#1E293B]
-          transition
-          border-b
-          border-gray-800
-        "
-      >
-        <p className="text-white font-medium">
-          Sign → Text
-        </p>
-
-        <p className="text-xs text-gray-400 mt-1">
-          Convert sign language into captions
-        </p>
-      </button>
-
-      {/* VOICE TO TEXT */}
-      <button
-        className="
-          w-full
-          text-left
-          px-5
-          py-4
-          hover:bg-[#1E293B]
-          transition
-        "
-      >
-        <p className="text-white font-medium">
-          Voice → Text
-        </p>
-
-        <p className="text-xs text-gray-400 mt-1">
-          Convert voice into live subtitles
-        </p>
-      </button>
-
-    </div>
-  )}
-
-</div>
-
-{/* MORE OPTIONS */}
-<div className="relative">
-
-  {/* BUTTON */}
-  <button
-    onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-    className="w-14 h-14 rounded-full bg-[#1E293B] hover:bg-[#334155] flex items-center justify-center transition"
-  >
-    <MoreVertical size={22} />
-  </button>
-
- {/* OPTIONS PANEL */}
-{showOptionsMenu && (
-  <div className="
-    fixed
-bottom-24
-left-1/2
--translate-x-1/2
-    bg-[#111827]
-    border
-    border-gray-700
-    rounded-3xl
-    shadow-2xl
-    z-50
-    p-4
-    max-w-[95vw]
-    overflow-x-auto
-  ">
-
-    <div className="flex items-center gap-4">
-
-      {/* SHARE SCREEN */}
-      <button
-        onClick={() => {
-
-          navigator.mediaDevices.getDisplayMedia({
-            video: true,
-          });
-
-          
-
-        }}
-        className="
-          min-w-[110px]
-          h-[110px]
-          rounded-3xl
-          bg-[#1E293B]
-          hover:bg-[#334155]
-          transition
-          flex
-          flex-col
-          items-center
-          justify-center
-        "
-      >
-
-        <span className="text-3xl mb-2">
-          🖥️
-        </span>
-
-        <p className="text-xs text-white">
-          Screen
-        </p>
-
-      </button>
-
-      {/* CAPTIONS */}
-      <button
-        onClick={() => {
-
-          setCaptionsEnabled(!captionsEnabled);
-
-          
-
-        }}
-        className="
-          min-w-[110px]
-          h-[110px]
-          rounded-3xl
-          bg-[#1E293B]
-          hover:bg-[#334155]
-          transition
-          flex
-          flex-col
-          items-center
-          justify-center
-        "
-      >
-
-        <span className="text-3xl mb-2">
-          💬
-        </span>
-
-        <p className="text-xs text-white">
-          Captions
-        </p>
-
-        <p className="text-[10px] text-cyan-400 mt-1">
-          {captionsEnabled ? "ON" : "OFF"}
-        </p>
-
-      </button>
-
-      {/* ADD PEOPLE */}
-      <button
-        onClick={() => {
-
-          alert("Invite participant feature connected later.");
-
-          setShowOptionsMenu(false);
-
-        }}
-        className="
-          min-w-[110px]
-          h-[110px]
-          rounded-3xl
-          bg-[#1E293B]
-          hover:bg-[#334155]
-          transition
-          flex
-          flex-col
-          items-center
-          justify-center
-        "
-      >
-
-        <span className="text-3xl mb-2">
-          👥
-        </span>
-
-        <p className="text-xs text-white">
-          Add People
-        </p>
-
-      </button>
-
-      {/* CREATE LINK */}
-      <div className="
-        min-w-[220px]
-        min-h-[110px]
-        rounded-3xl
-        bg-[#1E293B]
-        p-4
-        flex
-        flex-col
-        justify-center
-      ">
-
-        {!meetingLink ? (
-
-          <button
-            onClick={() => {
-
-              const roomId =
-                Math.random().toString(36).substring(2, 10);
-
-              const generatedLink =
-                `https://s2v-meet.vercel.app/room/${roomId}`;
-
-              setMeetingLink(generatedLink);
-
-              navigator.clipboard.writeText(generatedLink);
-
-            }}
-            className="w-full h-full flex flex-col items-center justify-center"
-          >
-
-            <span className="text-3xl mb-2">
-              🔗
-            </span>
-
-            <p className="text-xs text-white">
-              Create Link
-            </p>
-
-          </button>
-
-        ) : (
-
-          <>
-
-            <p className="text-[10px] text-cyan-400 mb-2">
-              Meeting Link
-            </p>
-
-            <div className="bg-[#0F172A] rounded-xl px-3 py-2 text-[10px] text-gray-300 overflow-hidden text-ellipsis whitespace-nowrap mb-3">
-              {meetingLink}
-            </div>
-
-            <button
-              onClick={() => {
-
-                navigator.clipboard.writeText(meetingLink);
-
-                setMeetingLink("");
-
-              }}
               className="
-                py-2
-                rounded-xl
-                bg-cyan-500
-                hover:bg-cyan-600
-                text-xs
-                font-medium
+                w-14
+                h-14
+                rounded-full
+                bg-[#EF4444]
+                hover:bg-[#DC2626]
+                flex
+                items-center
+                justify-center
                 transition
               "
             >
-              Copy
+              <img className="w-5" src={Phone} alt="" />
             </button>
+            <div ref={emojiRef} className="relative flex items-center justify-center">
 
-          </>
+              {/* Toggle Button */}
+              <button
+                onClick={() => setShowEmojiMenu(prev => !prev)}
+                className="w-14 h-14 rounded-full bg-[#E6DDF9] hover:bg-[#675B84] flex items-center justify-center transition"
+              >
+                <img className="w-5" src={Happy} alt="" />
+              </button>
 
-        )}
+              {/* Dropdown */}
+              {showEmojiMenu && (
+                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 min-w-[220px] bg-[#E6DDF9] p-3 rounded-3xl shadow-xl flex gap-3 flex-wrap justify-center z-50">
 
-      </div>
+                  {["👍", "👏", "🔥", "❤️", "😂", "😮"].map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => sendEmoji(emoji)}   // ❌ NO CLOSE HERE
+                      className="w-10 h-10 rounded-full bg-white hover:bg-[#f1ECF4] flex items-center justify-center text-xl border"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
 
-      {/* HAND RAISE */}
-      <button
-        onClick={() => {
+                </div>
+              )}
 
-          setHandRaised(!handRaised);
+            </div>
 
-          setShowOptionsMenu(false);
+            {/* CONVERSATION */}
+            <div className="relative">
 
-        }}
-        className="
-          min-w-[110px]
-          h-[110px]
-          rounded-3xl
-          bg-[#1E293B]
-          hover:bg-[#334155]
-          transition
-          flex
-          flex-col
-          items-center
-          justify-center
-        "
-      >
-
-        <span className="text-3xl mb-2">
-          ✋
-        </span>
-
-        <p className="text-xs text-white">
-          {handRaised ? "Lower" : "Raise"}
-        </p>
-
-      </button>
-
-      {/* CHAT */}
-      <button
-        onClick={() => {
-
-          setChatOpen(!chatOpen);
-
-          setShowOptionsMenu(false);
-
-        }}
-        className="
-          min-w-[110px]
-          h-[110px]
-          rounded-3xl
-          bg-[#1E293B]
-          hover:bg-[#334155]
-          transition
-          flex
-          flex-col
-          items-center
-          justify-center
-        "
-      >
-
-        <span className="text-3xl mb-2">
-          💬
-        </span>
-
-        <p className="text-xs text-white">
-          Chat
-        </p>
-
-      </button>
-
-      {/* EMOJIS */}
-      <div className="
-        min-w-[220px]
-        h-[110px]
-        rounded-3xl
-        bg-[#1E293B]
-        p-4
-        flex
-        flex-wrap
-        items-center
-        justify-center
-        gap-3
-      ">
-
-        {["👍", "👏", "🔥", "❤️", "😂", "😮"].map((emoji) => (
-          <button
-            key={emoji}
-            onClick={() => {
-
-              const id = Date.now();
-
-              const newEmoji = {
-                id,
-                emoji,
-              };
-
-              setFlyingEmojis((prev) => [
-                ...prev,
-                newEmoji,
-              ]);
-
-              setTimeout(() => {
-                setFlyingEmojis((prev) =>
-                  prev.filter(
-                    (item) => item.id !== id
+              <button
+                onClick={() =>
+                  setShowConversationMenu(
+                    !showConversationMenu
                   )
-                );
-              }, 4000);
+                }
+                className="
+                  p-5
+                  h-14
+                  rounded-full
+                  bg-[#E6DDF9] hover:bg-[#675B84]
+                  text-white
+                  font-medium
+                  transition
+                "
+              >
+                <img className="w-5" src={Chat} alt="" />
+              </button>
 
-            }}
-            className="
-              w-10
-              h-10
-              rounded-full
-              bg-[#0F172A]
-              hover:bg-[#334155]
-              text-xl
-              transition
-              flex
-              items-center
-              justify-center
-            "
-          >
-            {emoji}
-          </button>
-        ))}
+              {showConversationMenu && (
+                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 bg-white border border-[#E5E7EB] rounded-3xl overflow-hidden shadow-xl z-50">
 
-      </div>
+                  {[
+                    "Sign → Voice",
+                    "Sign → Text",
+                    "Voice → Text",
+                  ].map((item) => (
+                    <button
+                      key={item}
+                      className="w-full px-5 py-4 text-left hover:bg-[#E6DDF9] border-b border-[#E5E7EB]"
+                    >
+                      <p className="font-medium">
+                        {item}
+                      </p>
+                    </button>
+                  ))}
 
-      {/* CLOSE */}
-      <button
-        onClick={() => setShowOptionsMenu(false)}
-        className="
-          min-w-[70px]
-          h-[110px]
-          rounded-3xl
-          bg-red-500/20
-          hover:bg-red-500/30
-          transition
-          flex
-          items-center
-          justify-center
-          text-3xl
+                </div>
+              )}
+
+            </div>
+            {/* LINK */}
+            <div className="relative">
+              {/* ORIGINAL BUTTON */}
+              <div className="h-15 w-15 rounded-full bg-[#E6DDF9] p-3 flex items-center justify-center">
+                <button
+                  onClick={() => {
+                    const roomId = Math.random().toString(36).substring(2, 10);
+                    const link = `https://s2v-connect.vercel.app/room/${roomId}`;
+
+                    setMeetingLink(link);
+                    navigator.clipboard.writeText(link);
+                  }}
+                  className="flex items-center justify-center"
+                >
+                  <img className="w-5 h-5" src={Link} alt="" />
+                </button>
+              </div>
+
+              {/* POPUP CARD */}
+              {meetingLink && (
+                <div
+                  className="
+        absolute
+        bottom-20
+        left-0
+        w-80
+        bg-white
+        rounded-2xl
+        shadow-2xl
+        border
+        border-[#E6DDF9]
+        p-4
+        z-50
+      "
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-11 h-11 rounded-full bg-[#F3EEFF] flex items-center justify-center">
+                      <img className="w-5 h-5" src={Link} alt="" />
+                    </div>
+
+                    <div>
+                      <h2 className="text-sm font-semibold text-[#675B84]">
+                        Meeting Link Created
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Share this link with participants
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className="
+          bg-[#F8F5FF]
+          border
+          border-[#E6DDF9]
+          rounded-xl
+          p-3
+          text-sm
+          text-[#675B84]
+          break-all
+          mb-4
         "
-      >
-        ✕
-      </button>
+                  >
+                    {meetingLink}
+                  </div>
 
-    </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(meetingLink);
+                      }}
+                      className="
+            flex-1
+            bg-[#675B84]
+            hover:bg-[#57486f]
+            text-white
+            py-2.5
+            rounded-xl
+            text-sm
+            font-medium
+            transition
+          "
+                    >
+                      Copy Link
+                    </button>
 
-  </div>
-)}
+                    <button
+                      onClick={() => setMeetingLink("")}
+                      className="
+            px-4
+            py-2.5
+            rounded-xl
+            border
+            border-[#E6DDF9]
+            text-[#675B84]
+            hover:bg-[#F8F5FF]
+            transition
+          "
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
-</div>
+
+
+            <div
+              className="relative"
+              onMouseEnter={() => {
+                clearTimeout(hoverTimeout.current);
+                setShowOptionsMenu(true);
+              }}
+              onMouseLeave={() => {
+                hoverTimeout.current = setTimeout(() => {
+                  setShowOptionsMenu(false);
+                }, 250);
+              }}
+            >
+
+              {/* OPTIONS BUTTON */}
+              <button
+                className="
+      w-14
+      h-14
+      rounded-full
+      bg-[#E6DDF9]
+      hover:bg-[#D8C7FF]
+      transition-all
+      duration-300
+      flex
+      items-center
+      justify-center
+      shadow-md
+    "
+              >
+                <MoreVertical
+                  size={22}
+                  className="text-[#675B84]"
+                />
+              </button>
+
+              {/* HOVER MENU */}
+              {showOptionsMenu && (
+                <div
+                  className="
+        absolute
+        bottom-20
+        left-1/2
+        -translate-x-1/2
+        bg-white
+        border
+        border-[#E6DDF9]
+        rounded-3xl
+        p-5
+        shadow-[0_20px_60px_rgba(0,0,0,0.15)]
+        z-50
+        min-w-[340px]
+      "
+                  onMouseEnter={() => {
+                    clearTimeout(hoverTimeout.current);
+                    setShowOptionsMenu(true);
+                  }}
+                  onMouseLeave={() => {
+                    hoverTimeout.current = setTimeout(() => {
+                      setShowOptionsMenu(false);
+                    }, 250);
+                  }}
+                >
+
+                  {/* TITLE */}
+                  <div className="mb-4">
+                    <h2 className="text-sm font-semibold text-[#675B84]">
+                      Meeting Controls
+                    </h2>
+                    <p className="text-xs text-gray-500">
+                      Quick access tools
+                    </p>
+                  </div>
+
+                  {/* OPTIONS GRID */}
+                  <div className="grid grid-cols-4 gap-4">
+
+                    {/* SHARE */}
+                    <button
+                      className="
+            h-20
+            rounded-2xl
+            bg-[#F8F5FF]
+            hover:bg-[#E6DDF9]
+            transition-all
+            flex
+            flex-col
+            items-center
+            justify-center
+            gap-2
+            group
+          "
+                    >
+                      <img
+                        src={Share}
+                        className="w-6 h-6 object-contain"
+                      />
+
+                      <span className="text-[11px] text-[#675B84] font-medium">
+                        Share
+                      </span>
+                    </button>
+
+                    {/* CAPTIONS */}
+                    <button
+                      onClick={() =>
+                        setCaptionsEnabled(!captionsEnabled)
+                      }
+                      className="
+            h-20
+            rounded-2xl
+            bg-[#F8F5FF]
+            hover:bg-[#E6DDF9]
+            transition-all
+            flex
+            flex-col
+            items-center
+            justify-center
+            gap-2
+          "
+                    >
+                      <img
+                        src={Caption}
+                        className="w-6 h-6 object-contain"
+                      />
+
+                      <span className="text-[11px] text-[#675B84] font-medium">
+                        Captions
+                      </span>
+                    </button>
+
+                    {/* CHAT */}
+                    <button
+                      onClick={() => setChatOpen(!chatOpen)}
+                      className="
+            h-20
+            rounded-2xl
+            bg-[#F8F5FF]
+            hover:bg-[#E6DDF9]
+            transition-all
+            flex
+            flex-col
+            items-center
+            justify-center
+            gap-2
+          "
+                    >
+                      <img
+                        src={Chat}
+                        className="w-6 h-6 object-contain"
+                      />
+
+                      <span className="text-[11px] text-[#675B84] font-medium">
+                        Chat
+                      </span>
+                    </button>
+
+                    {/* HAND */}
+                    <button
+                      onClick={() => setHandRaised(!handRaised)}
+                      className="
+            h-20
+            rounded-2xl
+            bg-[#F8F5FF]
+            hover:bg-[#E6DDF9]
+            transition-all
+            flex
+            flex-col
+            items-center
+            justify-center
+            gap-2
+          "
+                    >
+                      <img
+                        src={Hand}
+                        className="w-6 h-6 object-contain"
+                      />
+
+                      <span className="text-[11px] text-[#675B84] font-medium">
+                        Raise
+                      </span>
+                    </button>
+
+                  </div>
+                </div>
+              )}
+            </div>
 
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }
