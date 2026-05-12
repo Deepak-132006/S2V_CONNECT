@@ -27,3 +27,17 @@
     opacity: 0;
   }
 }
+
+@keyframes emojiRain {
+
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(700px) scale(1.8);
+    opacity: 0;
+  }
+
+}

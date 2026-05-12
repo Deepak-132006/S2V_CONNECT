@@ -1,5 +1,5 @@
 
-import MeetingRoom from "./pages/MeetingRoom";
+import MeetingRoom from "./components/meeting/MeetingRoom";
 
 
 function App() {

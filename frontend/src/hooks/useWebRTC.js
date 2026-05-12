@@ -1,90 +1,109 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function useWebRTC() {
 
   const localVideoRef = useRef(null);
+
   const remoteVideoRef = useRef(null);
 
   const streamRef = useRef(null);
+
   const peerRef = useRef(null);
 
-  const [connected, setConnected] = useState(false);
+  const socketRef = useRef(null);
 
-  const createPeer = () => {
+  const [micOn, setMicOn] = useState(true);
 
-    if (peerRef.current) {
-      return peerRef.current;
-    }
+  const [cameraOn, setCameraOn] =
+    useState(true);
 
-    const peer = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: "stun:stun.l.google.com:19302",
-        },
-      ],
-    });
+  const [connected, setConnected] =
+    useState(false);
 
-    peer.ontrack = (event) => {
+  const [callEnded, setCallEnded] =
+    useState(false);
 
-      const remoteStream = event.streams[0];
+  const roomId = "room1";
 
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream;
+  const userIdRef = useRef(
+    Math.random().toString(36).slice(2, 8)
+  );
+
+  const userId = userIdRef.current;
+
+  useEffect(() => {
+
+    const startCamera = async () => {
+
+      const mediaStream =
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+
+      streamRef.current = mediaStream;
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject =
+          mediaStream;
       }
 
-      setConnected(true);
     };
 
-    peerRef.current = peer;
+    startCamera();
 
-    return peer;
-  };
+  }, []);
 
-  const startCamera = async () => {
+  const toggleMic = () => {
 
-    const mediaStream =
-      await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
+    streamRef.current
+      ?.getAudioTracks()
+      .forEach(track => {
+        track.enabled = !track.enabled;
       });
 
-    streamRef.current = mediaStream;
+    setMicOn(prev => !prev);
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject =
-        mediaStream;
-    }
   };
 
-  const addLocalTracks = () => {
+  const toggleCamera = () => {
 
-    const peer = createPeer();
+    streamRef.current
+      ?.getVideoTracks()
+      .forEach(track => {
+        track.enabled = !track.enabled;
+      });
+
+    setCameraOn(prev => !prev);
+
+  };
+
+  const endCall = () => {
 
     streamRef.current
       ?.getTracks()
-      .forEach(track => {
+      .forEach(track => track.stop());
 
-        const alreadyAdded =
-          peer.getSenders().find(
-            sender => sender.track === track
-          );
+    peerRef.current?.close();
 
-        if (!alreadyAdded) {
-          peer.addTrack(track, streamRef.current);
-        }
+    socketRef.current?.close();
 
-      });
+    setConnected(false);
+
+    setCallEnded(true);
+
   };
 
   return {
     localVideoRef,
     remoteVideoRef,
     streamRef,
-    peerRef,
+    micOn,
+    cameraOn,
     connected,
-    createPeer,
-    startCamera,
-    addLocalTracks,
-    setConnected,
+    callEnded,
+    toggleMic,
+    toggleCamera,
+    endCall,
   };
 }
