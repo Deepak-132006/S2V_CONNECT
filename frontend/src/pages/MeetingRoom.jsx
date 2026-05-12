@@ -42,11 +42,7 @@ export default function MeetingRoom() {
 
   const [messages, setMessages] = useState([]);
 
-  const [showConversationMenu, setShowConversationMenu] =
-    useState(false);
 
-  const [showOptionsMenu, setShowOptionsMenu] =
-    useState(false);
 
   const [captionsEnabled, setCaptionsEnabled] =
     useState(false);
@@ -583,51 +579,6 @@ export default function MeetingRoom() {
               )}
 
             </div>
-
-            {/* CONVERSATION */}
-            <div className="relative">
-
-              <button
-                onClick={() =>
-                  setShowConversationMenu(
-                    !showConversationMenu
-                  )
-                }
-                className="
-                  p-5
-                  h-14
-                  rounded-full
-                  bg-[#E6DDF9] hover:bg-[#675B84]
-                  text-white
-                  font-medium
-                  transition
-                "
-              >
-                <img className="w-5" src={Chat} alt="" />
-              </button>
-
-              {showConversationMenu && (
-                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-64 bg-white border border-[#E5E7EB] rounded-3xl overflow-hidden shadow-xl z-50">
-
-                  {[
-                    "Sign → Voice",
-                    "Sign → Text",
-                    "Voice → Text",
-                  ].map((item) => (
-                    <button
-                      key={item}
-                      className="w-full px-5 py-4 text-left hover:bg-[#E6DDF9] border-b border-[#E5E7EB]"
-                    >
-                      <p className="font-medium">
-                        {item}
-                      </p>
-                    </button>
-                  ))}
-
-                </div>
-              )}
-
-            </div>
             {/* LINK */}
             <div className="relative">
               {/* ORIGINAL BUTTON */}
@@ -680,7 +631,7 @@ export default function MeetingRoom() {
 
                   <div
                     className="
-          bg-[#F8F5FF]
+          bg-[#F8F5FF]F
           border
           border-[#E6DDF9]
           rounded-xl
