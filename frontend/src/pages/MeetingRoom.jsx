@@ -25,8 +25,8 @@ export default function MeetingRoom() {
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
-  const [stream, setStream] = useState(null);
-
+ const streamRef = useRef(null);
+const peerRef = useRef(null);
   const [micOn, setMicOn] = useState(true);
   const [cameraOn, setCameraOn] = useState(true);
 
@@ -66,69 +66,301 @@ export default function MeetingRoom() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+const createPeer = () => {
 
-  useEffect(() => {
-    startCamera();
-  }, []);
+  if (peerRef.current) {
+    return peerRef.current;
+  }
+
+  const peer = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: "stun:stun.l.google.com:19302",
+      },
+    ],
+  });
+
+  peer.onconnectionstatechange = () => {
+    console.log(
+      "STATE:",
+      peer.connectionState
+    );
+  };
+
+  peer.ontrack = (event) => {
+
+    console.log("TRACK RECEIVED");
+
+    const remoteStream = event.streams[0];
+
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject =
+        remoteStream;
+    }
+
+    setConnected(true);
+
+  };
+
+  peer.onicecandidate = (event) => {
+
+    console.log("ICE:", event.candidate);
+
+    if (
+      event.candidate &&
+      socketRef.current?.readyState === WebSocket.OPEN
+    ) {
+
+      socketRef.current.send(
+        JSON.stringify({
+          type: "ice-candidate",
+          candidate: event.candidate,
+        })
+      );
+
+    }
+
+  };
+
+  peerRef.current = peer;
+
+  return peer;
+};
 
   // CAMERA
-  const startCamera = async () => {
-    try {
-      const mediaStream =
-        await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
+const startCamera = async () => {
+  try {
+    const mediaStream =
+      await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
 
-      setStream(mediaStream);
+    streamRef.current = mediaStream;
 
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject =
-          mediaStream;
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject =
+        mediaStream;
+    }
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+const addLocalTracks = () => {
+
+  const peer = createPeer();
+
+  streamRef.current
+    ?.getTracks()
+    .forEach(track => {
+
+      const alreadyAdded =
+        peer.getSenders().find(
+          sender => sender.track === track
+        );
+
+      if (!alreadyAdded) {
+        peer.addTrack(track, streamRef.current);
       }
 
-    } catch (error) {
-      console.log(error);
+    });
+
+};
+
+const connectSocket = () => {
+
+  if (socketRef.current) return;
+
+  socketRef.current = new WebSocket(
+    `ws://localhost:8000/ws/${roomId}/${userId}`
+  );
+
+  socketRef.current.onopen = () => {
+
+    console.log("Socket Connected");
+
+    addLocalTracks();
+
+  };
+
+  socketRef.current.onmessage = async (event) => {
+
+    const data = JSON.parse(event.data);
+
+    console.log("MESSAGE:", data.type);
+
+    switch (data.type) {
+
+      case "ready":
+        await createOffer();
+        break;
+
+      case "offer":
+        await handleOffer(data.offer);
+        break;
+
+      case "answer":
+        await handleAnswer(data.answer);
+        break;
+
+      case "ice-candidate":
+        await handleICE(data.candidate);
+        break;
     }
   };
+};
+
+
+const createOffer = async () => {
+
+  const peer = createPeer();
+
+  addLocalTracks();
+   const offer =
+    await peer.createOffer();
+
+  await peer.setLocalDescription(offer);
+
+  socketRef.current.send(
+    JSON.stringify({
+      type: "offer",
+      offer,
+    })
+  );
+};
+
+const handleOffer = async (offer) => {
+
+  const peer = createPeer();
+
+  addLocalTracks();
+
+  await peer.setRemoteDescription(
+    new RTCSessionDescription(offer)
+  );
+
+  const answer =
+    await peer.createAnswer();
+
+  await peer.setLocalDescription(answer);
+
+  socketRef.current.send(
+    JSON.stringify({
+      type: "answer",
+      answer,
+    })
+  );
+
+};
+const handleAnswer = async (answer) => {
+
+  const peer = createPeer();
+
+  await peer.setRemoteDescription(
+    new RTCSessionDescription(answer)
+  );
+
+};
+const handleICE = async (candidate) => {
+
+  try {
+
+    const peer = createPeer();
+
+    await peer.addIceCandidate(
+      new RTCIceCandidate(candidate)
+    );
+
+  } catch (err) {
+    console.log(err);
+  }
+
+};
+
+useEffect(() => {
+
+  const init = async () => {
+
+    await startCamera();
+
+    connectSocket();
+
+  };
+
+  init();
+
+  return () => {
+
+    streamRef.current
+      ?.getTracks()
+      .forEach(track => track.stop());
+
+    peerRef.current?.close();
+
+    socketRef.current?.close();
+
+  };
+
+}, []);
+const socketRef = useRef(null);
+
+const roomId = "room1";
+const userIdRef = useRef(
+  Math.random().toString(36).slice(2, 8)
+);
+
+const userId = userIdRef.current;
 
   // MIC
-  const toggleMic = () => {
-    if (!stream) return;
+const toggleMic = () => {
 
-    stream.getAudioTracks().forEach((track) => {
+  if (!streamRef.current) return;
+
+  streamRef.current
+    .getAudioTracks()
+    .forEach((track) => {
       track.enabled = !track.enabled;
     });
 
-    setMicOn(!micOn);
-  };
+  setMicOn(!micOn);
+};
 
   // CAMERA
-  const toggleCamera = () => {
-    if (!stream) return;
+const toggleCamera = () => {
 
-    stream.getVideoTracks().forEach((track) => {
+  if (!streamRef.current) return;
+
+  streamRef.current
+    .getVideoTracks()
+    .forEach(track => {
       track.enabled = !track.enabled;
     });
 
-    setCameraOn(!cameraOn);
-  };
+  setCameraOn(prev => !prev);
+
+};
 
   // END CALL
-  const endCall = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
-    }
+ const endCall = () => {
 
-    setCallEnded(true);
-  };
+  streamRef.current
+    ?.getTracks()
+    .forEach(track => track.stop());
 
-  // CONNECT
-  const connectCall = () => {
-    setConnected(true);
-  };
+  peerRef.current?.close();
+
+  socketRef.current?.close();
+
+  peerRef.current = null;
+
+  socketRef.current = null;
+
+  setConnected(false);
+
+  setCallEnded(true);
+
+};
 
   // EMOJI
   const sendEmoji = (emoji) => {
@@ -330,7 +562,7 @@ export default function MeetingRoom() {
                   </p>
 
                   <button
-                    onClick={connectCall}
+                    disabled
                     className="
                       mt-6
                       px-6
