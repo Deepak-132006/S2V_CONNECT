@@ -233,7 +233,7 @@ const connectSocket = () => {
   if (socketRef.current) return;
 
   socketRef.current = new WebSocket(
-    `ws://localhost:8000/ws/${roomId}/${userId}`
+    `ws://${window.location.hostname}:8000/ws/${roomId}/${userId}`
   );
 
   socketRef.current.onopen = () => {

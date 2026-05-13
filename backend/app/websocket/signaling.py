@@ -8,9 +8,9 @@ async def websocket_endpoint(
 ):
 
     await manager.connect(
+        websocket,
         room_id,
-        user_id,
-        websocket
+        user_id
     )
 
     try:
@@ -19,8 +19,9 @@ async def websocket_endpoint(
 
             data = await websocket.receive_json()
 
-            # SEND TO OTHER USERS
-            await manager.send_to_room(
+            print(data)
+
+            await manager.broadcast(
                 room_id,
                 user_id,
                 data
@@ -28,7 +29,7 @@ async def websocket_endpoint(
 
     except Exception as e:
 
-        print("Disconnected:", e)
+        print("Disconnected", e)
 
         manager.disconnect(
             room_id,

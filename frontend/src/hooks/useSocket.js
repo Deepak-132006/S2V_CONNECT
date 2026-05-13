@@ -28,7 +28,7 @@ export default function useSocket({
     };
 
     socketRef.current.onmessage = async (event) => {
-
+~!
       const data = JSON.parse(event.data);
 
       switch (data.type) {
