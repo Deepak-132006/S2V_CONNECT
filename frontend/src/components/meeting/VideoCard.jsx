@@ -9,12 +9,10 @@ export default function VideoCard({
   handRaised,
   flyingEmojis,
 }) {
-
   const isLocal = type === "local";
 
   return (
     <div className="flex-1 relative rounded-[32px] bg-black border border-[#E5E7EB] overflow-hidden shadow-sm">
-
       {isLocal ? (
         !callEnded && cameraOn ? (
           <video
@@ -37,23 +35,33 @@ export default function VideoCard({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center">
+        <>
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className={`w-full h-full object-cover ${
+              connected && !callEnded ? "block" : "hidden"
+            }`}
+          />
 
-          <div className="w-24 h-24 rounded-full bg-[#f1ECF4] flex items-center justify-center text-3xl mb-4">
-            👤
-          </div>
+          {(!connected || callEnded) && (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-[#f1ECF4] flex items-center justify-center text-3xl mb-4">
+                👤
+              </div>
 
-          <p className="text-lg text-[#ecedf0]">
-            Waiting for participant...
-          </p>
-
-        </div>
+              <p className="text-lg text-[#ecedf0]">
+                Waiting for participant...
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       <div className="absolute bottom-4 left-4 bg-white/80 backdrop-blur-xl border border-[#E5E7EB] px-4 py-2 rounded-2xl text-sm shadow-sm">
         {isLocal ? "You" : "Participant"}
       </div>
-
     </div>
   );
 }
